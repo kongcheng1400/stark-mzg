@@ -3,7 +3,7 @@ import { SpiritStoneABI, SpiritStoneAddress } from "./spiritStone.mjs";
 import { myBook, ABIETHMainnet, AddrETH } from "./starkSetup.mjs";
 import chalk from "chalk";
 import * as myStarkAPI from "./starkAPI.mjs";
-import * as myFunctions from "../../myEthersJSLib/functions.js";
+import * as myFunctions from "./functions.js";
 
 const provider = new Provider({ sequencer: { network: "mainnet-alpha" } });
 console.log(provider);

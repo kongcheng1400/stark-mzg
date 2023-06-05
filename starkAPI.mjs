@@ -2,7 +2,7 @@ import chalk from "chalk";
 import { ethers } from "ethers";
 import { uint256, Contract } from "starknet";
 import { ABIETHMainnet, AddrETH } from "./starkSetup.mjs";
-import * as myFunctions from "../../myEthersJSLib/functions.js";
+import * as myFunctions from "./functions.js";
 
 export async function checkNetWorkStatus(provider, myAddr) {
     const myName = await provider.getStarkName(myAddr);
