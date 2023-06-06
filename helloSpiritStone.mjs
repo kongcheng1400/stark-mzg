@@ -73,7 +73,7 @@ async function scheduleJob() {
         //availability = await checkMintAvailability(erc20);
         availability = true;
         let successDelay = 100;
-        let failDelay = 1200;
+        let failDelay = 200;
 
         if (availability) {
             console.log(chalk.bold.bgGreen(`sucess=${successCounter} times`));
@@ -87,7 +87,7 @@ async function scheduleJob() {
                 console.log(error);
                 successCounter -= 1;
                 await myFunctions.sleep(failDelay);
-                successDelay = 1200;
+                successDelay = 200;
             }
         }
         await myFunctions.sleep(successDelay);
