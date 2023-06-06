@@ -1,11 +1,22 @@
-import { Provider, Contract, Account, ec, json, uint256 } from "starknet";
+import {
+    Provider,
+    Contract,
+    Account,
+    ec,
+    json,
+    uint256,
+    RpcProvider,
+} from "starknet";
 import { SpiritStoneABI, SpiritStoneAddress } from "./spiritStone.mjs";
 import { myBook, ABIETHMainnet, AddrETH } from "./starkSetup.mjs";
 import chalk from "chalk";
 import * as myStarkAPI from "./starkAPI.mjs";
 import * as myFunctions from "./functions.js";
 
-const provider = new Provider({ sequencer: { network: "mainnet-alpha" } });
+const provider = new RpcProvider({
+    nodeUrl: "https://starknet-mainnet.g.alchemy.com/v2/yourapikey",
+});
+//const provider = new Provider({ sequencer: { network: "mainnet-alpha" } });
 console.log(provider);
 const myAddr = myBook.get("B01")[0];
 const myPubKey = myBook.get("B01")[1];
@@ -52,11 +63,7 @@ async function scheduleJob() {
     console.log(
         chalk.bold.bgYellow("connecting erc20SPIST and prepare interact")
     );
-    const erc20 = new Contract(
-        SpiritStoneABI,
-        SpiritStoneAddress,
-        provider
-    );
+    const erc20 = new Contract(SpiritStoneABI, SpiritStoneAddress, provider);
     erc20.connect(myAccount);
     let successCounter = 0;
 
@@ -69,20 +76,15 @@ async function scheduleJob() {
         let failDelay = 1200;
 
         if (availability) {
-            console.log(
-                chalk.bold.bgGreen(`sucess=${successCounter} times`)
-            );
+            console.log(chalk.bold.bgGreen(`sucess=${successCounter} times`));
             try {
                 successCounter += 1;
                 await mintSPIST(erc20);
-                console.log(
-                    chalk.bold.bgGreen(`sucess mint and wait another`)
-                );
+                console.log(chalk.bold.bgGreen(`sucess mint and wait another`));
                 successDelay = 100;
             } catch (error) {
-                console.log(
-                    chalk.bold.redBright("tx failed and try again")
-                );
+                console.log(chalk.bold.redBright("tx failed and try again"));
+                console.log(error);
                 successCounter -= 1;
                 await myFunctions.sleep(failDelay);
                 successDelay = 1200;
@@ -98,11 +100,7 @@ const main = async () => {
     const myName = await myStarkAPI.checkNetWorkStatus(provider, myAddr);
     console.log(`your starknet id:${myName}, network is good to go.`);
     console.log(chalk.bold.bgGreen("2. check my account eth balance"));
-    let initBal = await myStarkAPI.checkEthBalance(
-        provider,
-        myName,
-        myAddr
-    );
+    let initBal = await myStarkAPI.checkEthBalance(provider, myName, myAddr);
     console.log(chalk.bold.bgGreen("3. schedule the job..."));
     await scheduleJob();
 };
