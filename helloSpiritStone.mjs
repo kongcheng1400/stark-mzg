@@ -28,30 +28,67 @@ const getMethods = (obj) => {
 };
 
 console.log(getMethods(provider));
+async function checkMintAvailability(erc20SPIST) {
+    console.log(chalk.bold.bgCyan(`check mint availability`));
+    let _count = await erc20SPIST.available_mint_count();
+    let count = uint256.uint256ToBN(_count).toString();
+    console.log(`available_mint_count=${count}, typeof=${typeof count}`);
+    if (Number(count) === 0) {
+        console.log(chalk.bold.bgGreen(`no availability`));
+        return false;
+    } else {
+        return true;
+    }
+}
 
-async function mintSPIST() {
+async function mintSPIST(erc20SPIST) {
     //
+    const resu = await erc20SPIST.mint();
+    await provider.waitForTransaction(resu.transaction_hash);
+}
+
+async function scheduleJob() {
+    console.log(chalk.bold.bgYellow("working on..."));
+    console.log(
+        chalk.bold.bgYellow("connecting erc20SPIST and prepare interact")
+    );
     const erc20 = new Contract(
         SpiritStoneABI,
         SpiritStoneAddress,
         provider
     );
     erc20.connect(myAccount);
-    const resu = await erc20.mint();
-    await provider.waitForTransaction(resu.transaction_hash);
-}
+    let successCounter = 0;
 
-async function scheduleJob() {
-    console.log(chalk.bold.bgYellow("working on..."));
+    let thisRoundSuccessMint = 0;
     while (true) {
-        await myFunctions.sleep(1000);
-        try {
-            await mintSPIST();
-        } catch (error) {
-            console.log(chalk.bold.redBright("finished"));
-            console.log(error);
+        let availability = false;
+        //availability = await checkMintAvailability(erc20);
+        availability = true;
+        let successDelay = 100;
+        let failDelay = 1200;
+
+        if (availability) {
+            console.log(
+                chalk.bold.bgGreen(`sucess=${successCounter} times`)
+            );
+            try {
+                successCounter += 1;
+                await mintSPIST(erc20);
+                console.log(
+                    chalk.bold.bgGreen(`sucess mint and wait another`)
+                );
+                successDelay = 100;
+            } catch (error) {
+                console.log(
+                    chalk.bold.redBright("tx failed and try again")
+                );
+                successCounter -= 1;
+                await myFunctions.sleep(failDelay);
+                successDelay = 1200;
+            }
         }
-        await myFunctions.sleep(1000);
+        await myFunctions.sleep(successDelay);
     }
     console.log(chalk.bold.bgYellow("finished"));
 }
