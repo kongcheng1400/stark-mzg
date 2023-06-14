@@ -1,15 +1,18 @@
-import { Provider, Contract, Account, ec, json, uint256 } from "starknet";
+import { Provider, Contract, Account, ec, json, uint256, RpcProvider } from "starknet";
 import { SpiritStoneABI, SpiritStoneAddress } from "./spiritStone.mjs";
 import { myBook, ABIETHMainnet, AddrETH } from "./starkSetup.mjs";
 import chalk from "chalk";
 import * as myStarkAPI from "./starkAPI.mjs";
-import * as myFunctions from "./functions.js";
-
+import * as myFunctions from "../../myEthersJSLib/functions.js";
+/*const provider = new RpcProvider({
+    nodeUrl: 'https://starknet-mainnet.g.alchemy.com/v2/VJHKjNayw-2-HngNyOl2hKX75OE9lcOI',
+  })*/
 const provider = new Provider({ sequencer: { network: "mainnet-alpha" } });
 console.log(provider);
-const myAddr = myBook.get("B01")[0];
-const myPubKey = myBook.get("B01")[1];
-const myPrivKey = myBook.get("B01")[2];
+const myWalletName="B06"
+const myAddr = myBook.get(myWalletName)[0];
+const myPubKey = myBook.get(myWalletName)[1];
+const myPrivKey = myBook.get(myWalletName)[2];
 
 const myKeyPair = ec.getKeyPair(myPrivKey);
 const myAccount = new Account(provider, myAddr, myKeyPair);
@@ -65,12 +68,12 @@ async function scheduleJob() {
         let availability = false;
         //availability = await checkMintAvailability(erc20);
         availability = true;
-        let successDelay = 100;
-        let failDelay = 1200;
+        let successDelay = 100
+        let failDelay = 1020
 
         if (availability) {
             console.log(
-                chalk.bold.bgGreen(`sucess=${successCounter} times`)
+                chalk.bold.bgGreen(`sucess=${successCounter} times on ${myWalletName}`)
             );
             try {
                 successCounter += 1;
@@ -78,14 +81,21 @@ async function scheduleJob() {
                 console.log(
                     chalk.bold.bgGreen(`sucess mint and wait another`)
                 );
-                successDelay = 100;
+                successDelay = 20000
             } catch (error) {
+                console.log(error)
+                if (error.toString().includes("throughput limit")) {
+                    console.log('\n')
+                    chalk.bold.redBright(`throughput limit reached on starknet. wait longer.`)
+                    failDelay = 6000
+                }
                 console.log(
-                    chalk.bold.redBright("tx failed and try again")
+                    chalk.bold.redBright(`tx failed and try again on ${myWalletName}`)
                 );
                 successCounter -= 1;
                 await myFunctions.sleep(failDelay);
-                successDelay = 1200;
+                successDelay = 200
+                
             }
         }
         await myFunctions.sleep(successDelay);
