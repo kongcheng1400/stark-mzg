@@ -1,16 +1,24 @@
-import { Provider, Contract, Account, ec, json, uint256, RpcProvider } from "starknet";
+import {
+    Provider,
+    Contract,
+    Account,
+    ec,
+    json,
+    uint256,
+    RpcProvider,
+} from "starknet";
 import { SpiritStoneABI, SpiritStoneAddress } from "./spiritStone.mjs";
 import { myBook, ABIETHMainnet, AddrETH } from "./starkSetup.mjs";
 import chalk from "chalk";
 import * as myStarkAPI from "./starkAPI.mjs";
 import * as myFunctions from "./functions.js";
 
-const provider = new RpcProvider({
-    nodeUrl: "https://starknet-mainnet.g.alchemy.com/v2/yourapikey",
-});
-//const provider = new Provider({ sequencer: { network: "mainnet-alpha" } });
+// const provider = new RpcProvider({
+//     nodeUrl: "https://starknet-mainnet.g.alchemy.com/v2/yourapikey",
+// });
+const provider = new Provider({ sequencer: { network: "mainnet-alpha" } });
 console.log(provider);
-const myWalletName="B06"
+const myWalletName = "B06";
 const myAddr = myBook.get(myWalletName)[0];
 const myPubKey = myBook.get(myWalletName)[1];
 const myPrivKey = myBook.get(myWalletName)[2];
@@ -56,7 +64,11 @@ async function scheduleJob() {
     console.log(
         chalk.bold.bgYellow("connecting erc20SPIST and prepare interact")
     );
-    const erc20 = new Contract(SpiritStoneABI, SpiritStoneAddress, provider);
+    const erc20 = new Contract(
+        SpiritStoneABI,
+        SpiritStoneAddress,
+        provider
+    );
     erc20.connect(myAccount);
     let successCounter = 0;
 
@@ -65,12 +77,14 @@ async function scheduleJob() {
         let availability = false;
         //availability = await checkMintAvailability(erc20);
         availability = true;
-        let successDelay = 100
-        let failDelay = 1020
+        let successDelay = 100;
+        let failDelay = 1020;
 
         if (availability) {
             console.log(
-                chalk.bold.bgGreen(`sucess=${successCounter} times on ${myWalletName}`)
+                chalk.bold.bgGreen(
+                    `sucess=${successCounter} times on ${myWalletName}`
+                )
             );
             try {
                 successCounter += 1;
@@ -78,21 +92,24 @@ async function scheduleJob() {
                 console.log(
                     chalk.bold.bgGreen(`sucess mint and wait another`)
                 );
-                successDelay = 20000
+                successDelay = 20000;
             } catch (error) {
-                console.log(error)
+                console.log(error);
                 if (error.toString().includes("throughput limit")) {
-                    console.log('\n')
-                    chalk.bold.redBright(`throughput limit reached on starknet. wait longer.`)
-                    failDelay = 6000
+                    console.log("\n");
+                    chalk.bold.redBright(
+                        `throughput limit reached on starknet. wait longer.`
+                    );
+                    failDelay = 6000;
                 }
                 console.log(
-                    chalk.bold.redBright(`tx failed and try again on ${myWalletName}`)
+                    chalk.bold.redBright(
+                        `tx failed and try again on ${myWalletName}`
+                    )
                 );
                 successCounter -= 1;
                 await myFunctions.sleep(failDelay);
-                successDelay = 200
-                
+                successDelay = 200;
             }
         }
         await myFunctions.sleep(successDelay);
@@ -105,7 +122,11 @@ const main = async () => {
     const myName = await myStarkAPI.checkNetWorkStatus(provider, myAddr);
     console.log(`your starknet id:${myName}, network is good to go.`);
     console.log(chalk.bold.bgGreen("2. check my account eth balance"));
-    let initBal = await myStarkAPI.checkEthBalance(provider, myName, myAddr);
+    let initBal = await myStarkAPI.checkEthBalance(
+        provider,
+        myName,
+        myAddr
+    );
     console.log(chalk.bold.bgGreen("3. schedule the job..."));
     await scheduleJob();
 };
