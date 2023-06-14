@@ -3,11 +3,12 @@ import { SpiritStoneABI, SpiritStoneAddress } from "./spiritStone.mjs";
 import { myBook, ABIETHMainnet, AddrETH } from "./starkSetup.mjs";
 import chalk from "chalk";
 import * as myStarkAPI from "./starkAPI.mjs";
-import * as myFunctions from "../../myEthersJSLib/functions.js";
-/*const provider = new RpcProvider({
-    nodeUrl: 'https://starknet-mainnet.g.alchemy.com/v2/VJHKjNayw-2-HngNyOl2hKX75OE9lcOI',
-  })*/
-const provider = new Provider({ sequencer: { network: "mainnet-alpha" } });
+import * as myFunctions from "./functions.js";
+
+const provider = new RpcProvider({
+    nodeUrl: "https://starknet-mainnet.g.alchemy.com/v2/yourapikey",
+});
+//const provider = new Provider({ sequencer: { network: "mainnet-alpha" } });
 console.log(provider);
 const myWalletName="B06"
 const myAddr = myBook.get(myWalletName)[0];
@@ -55,11 +56,7 @@ async function scheduleJob() {
     console.log(
         chalk.bold.bgYellow("connecting erc20SPIST and prepare interact")
     );
-    const erc20 = new Contract(
-        SpiritStoneABI,
-        SpiritStoneAddress,
-        provider
-    );
+    const erc20 = new Contract(SpiritStoneABI, SpiritStoneAddress, provider);
     erc20.connect(myAccount);
     let successCounter = 0;
 
@@ -108,11 +105,7 @@ const main = async () => {
     const myName = await myStarkAPI.checkNetWorkStatus(provider, myAddr);
     console.log(`your starknet id:${myName}, network is good to go.`);
     console.log(chalk.bold.bgGreen("2. check my account eth balance"));
-    let initBal = await myStarkAPI.checkEthBalance(
-        provider,
-        myName,
-        myAddr
-    );
+    let initBal = await myStarkAPI.checkEthBalance(provider, myName, myAddr);
     console.log(chalk.bold.bgGreen("3. schedule the job..."));
     await scheduleJob();
 };
